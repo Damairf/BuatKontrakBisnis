@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  background: #ececec;
+  font-family: "Poppins", ui-sans-serif, system-ui, sans-serif;
+}
+
+.doc-page {
+  font-family: "Times New Roman", Times, serif;
+  color: #111;
+  line-height: 1.6;
+}
+
+.doc-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.doc-scroll::-webkit-scrollbar-thumb {
+  background: #c7c7c7;
+  border-radius: 999px;
+}
