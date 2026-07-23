@@ -1,8 +1,13 @@
 export default function DeleteModal({ onCancel, onConfirm }) {
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full text-center border border-gray-100 transform transition-all">
-        {/* SVG tempat sampah merah */}
+    <div
+      className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4"
+      onClick={onCancel}
+    >
+      <div
+        className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full text-center border border-gray-100 transform transition-all"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="mx-auto w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mb-4">
           <svg
             className="w-9 h-9 text-[#FF0000]"
@@ -28,7 +33,6 @@ export default function DeleteModal({ onCancel, onConfirm }) {
         </p>
 
         <div className="flex justify-center gap-4">
-          {/* Button Batal: warna dasar #FF0000 dan hover red-600 persis seperti button Hapus */}
           <button
             onClick={onCancel}
             className="bg-[#FF0000] hover:bg-red-600 transition text-white font-bold px-8 py-3 rounded-xl text-sm shadow-sm cursor-pointer"

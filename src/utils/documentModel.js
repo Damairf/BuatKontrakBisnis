@@ -7,6 +7,11 @@ function orDash(val) {
   return val === "" || val === null || val === undefined ? PLACEHOLDER : val;
 }
 
+function rupiah(angka) {
+  const teks = angkaDanTerbilang(angka);
+  return teks === PLACEHOLDER ? teks : `Rp${teks}`;
+}
+
 function joinBarangList(list, { withHarga = false } = {}) {
   const valid = list.filter((b) => b.barang || b.jumlah || b.satuan);
   if (!valid.length) return PLACEHOLDER;
@@ -16,7 +21,7 @@ function joinBarangList(list, { withHarga = false } = {}) {
     const barang = orDash(b.barang);
     let text = `${jumlah} ${satuan} ${barang}`;
     if (withHarga && b.harga !== "" && b.harga !== undefined) {
-      text += ` seharga ${angkaDanTerbilang(b.harga)}`;
+      text += ` seharga ${rupiah(b.harga)}`;
     }
     return text;
   });
@@ -48,11 +53,6 @@ function barangUtama(list) {
   return found ? found.barang : PLACEHOLDER;
 }
 
-/**
- * Membangun model dokumen (array "blocks") dari state wizard.
- * Model ini dipakai baik oleh preview HTML maupun generator DOCX/PDF,
- * supaya keduanya selalu konsisten.
- */
 export function buildContractModel(state) {
   const {
     judul,
@@ -88,7 +88,8 @@ export function buildContractModel(state) {
   const grandTotal = totalHarga(barangKeseluruhan);
   const setengahTotal = grandTotal / 2;
 
-  const judulTampil = judul && judul.trim() ? judul.trim().toUpperCase() : PLACEHOLDER;
+  const judulTampil =
+    judul && judul.trim() ? judul.trim().toUpperCase() : PLACEHOLDER;
   const alamatPeresmianTampil = orDash(alamatPeresmian);
 
   const blocks = [];
@@ -101,9 +102,17 @@ export function buildContractModel(state) {
   });
 
   blocks.push({ type: "partyblock", label: "Penjual", pihak: pihak1 });
-  blocks.push({ type: "partyblock", label: "Pembeli", pihak: pihak2, isLast: true });
+  blocks.push({
+    type: "partyblock",
+    label: "Pembeli",
+    pihak: pihak2,
+    isLast: true,
+  });
 
-  blocks.push({ type: "para", text: "Para pihak terlebih dahulu dengan ini menerangkan hal-hal sebagai berikut:" });
+  blocks.push({
+    type: "para",
+    text: "Para pihak terlebih dahulu dengan ini menerangkan hal-hal sebagai berikut:",
+  });
 
   blocks.push({
     type: "numbered",
@@ -112,7 +121,7 @@ export function buildContractModel(state) {
       `Penjual bermaksud menjual ${joinBarangList(barangKeseluruhan)}.`,
       `Pembeli bermaksud membeli ${joinBarangList(barangKeseluruhan)}.`,
       `Harga yang disepakati untuk setiap ${joinBarangList(hargaPerSatuan, { withHarga: true })}.`,
-      `Harga keseluruhan ${joinBarangList(barangKeseluruhan)} adalah ${angkaDanTerbilang(grandTotal)}.`,
+      `Harga keseluruhan ${joinBarangList(barangKeseluruhan)} adalah ${rupiah(grandTotal)}.`,
       "Penjual dan Pembeli sepakat melakukan jual-beli dengan kedudukan Penjual sebagai Penjual dan Pembeli sebagai Pembeli.",
     ],
   });
@@ -124,7 +133,10 @@ export function buildContractModel(state) {
 
   // Pasal 1
   blocks.push({ type: "pasal", nomor: 1, judul: "Ketentuan Umum" });
-  blocks.push({ type: "para", text: "Dalam perjanjian ini yang dimaksud dengan:" });
+  blocks.push({
+    type: "para",
+    text: "Dalam perjanjian ini yang dimaksud dengan:",
+  });
   const ketentuan = ketentuanUmum.filter((k) => k.trim() !== "");
   blocks.push({
     type: "numbered",
@@ -133,28 +145,37 @@ export function buildContractModel(state) {
 
   // Pasal 2
   blocks.push({ type: "pasal", nomor: 2, judul: "Harga Barang" });
-  blocks.push({ type: "para", text: "Harga barang yang telah disepakati oleh kedua belah pihak adalah sebagai berikut:" });
+  blocks.push({
+    type: "para",
+    text: "Harga barang yang telah disepakati oleh kedua belah pihak adalah sebagai berikut:",
+  });
   const pasal2Items = hargaPerSatuan
     .filter((b) => b.barang || b.jumlah || b.harga)
     .map((b) => {
       const jumlah = orDash(b.jumlah);
       const satuan = orDash(b.satuan);
       const barang = orDash(b.barang);
-      return `${jumlah} (${b.jumlah ? terbilang(b.jumlah) : PLACEHOLDER}) ${satuan} ${barang} adalah ${angkaDanTerbilang(b.harga)}.`;
+      return `${jumlah} (${b.jumlah ? terbilang(b.jumlah) : PLACEHOLDER}) ${satuan} ${barang} adalah ${rupiah(b.harga)}.`;
     });
   pasal2Items.push(
-    `Total harga ${formatAngka(totalJumlah(barangKeseluruhan)) || PLACEHOLDER} (${totalJumlah(barangKeseluruhan) ? terbilang(totalJumlah(barangKeseluruhan)) : PLACEHOLDER}) ${satuanUtama(barangKeseluruhan)} ${barangUtama(barangKeseluruhan)} adalah ${angkaDanTerbilang(grandTotal)}.`
+    `Total harga ${formatAngka(totalJumlah(barangKeseluruhan)) || PLACEHOLDER} (${totalJumlah(barangKeseluruhan) ? terbilang(totalJumlah(barangKeseluruhan)) : PLACEHOLDER}) ${satuanUtama(barangKeseluruhan)} ${barangUtama(barangKeseluruhan)} adalah ${rupiah(grandTotal)}.`,
   );
-  blocks.push({ type: "numbered", items: pasal2Items.length ? pasal2Items : [PLACEHOLDER] });
+  blocks.push({
+    type: "numbered",
+    items: pasal2Items.length ? pasal2Items : [PLACEHOLDER],
+  });
 
   // Pasal 3
   blocks.push({ type: "pasal", nomor: 3, judul: "Tata Cara Pembayaran" });
-  blocks.push({ type: "para", text: "Kedua belah pihak sepakat bahwa pembayaran dilakukan dalam dua tahap:" });
+  blocks.push({
+    type: "para",
+    text: "Kedua belah pihak sepakat bahwa pembayaran dilakukan dalam dua tahap:",
+  });
   blocks.push({
     type: "lettered",
     items: [
-      `Tahap pertama dilakukan pada saat penandatanganan perjanjian sebesar 50% dari total harga keseluruhan, yaitu ${angkaDanTerbilang(setengahTotal)}.`,
-      `Tahap kedua dilakukan pada saat penyerahan barang sebesar ${angkaDanTerbilang(setengahTotal)}.`,
+      `Tahap pertama dilakukan pada saat penandatanganan perjanjian sebesar 50% dari total harga keseluruhan, yaitu ${rupiah(setengahTotal)}.`,
+      `Tahap kedua dilakukan pada saat penyerahan barang sebesar ${rupiah(setengahTotal)}.`,
     ],
   });
 
@@ -166,17 +187,30 @@ export function buildContractModel(state) {
       text: "Pembayaran wajib menggunakan uang tunai secara langsung, tidak melalui transfer atau menggunakan cek maupun bilyet.",
     });
   } else {
-    blocks.push({ type: "para", text: "Pembayaran dilakukan melalui transfer ke:" });
-    blocks.push({ type: "keyvalue", rows: [
-      ["Nama Bank", orDash(namaBank)],
-      ["Nomor Rekening", orDash(nomorRekening)],
-      ["Atas Nama", orDash(atasNamaRekening)],
-    ]});
+    blocks.push({
+      type: "para",
+      text: "Pembayaran dilakukan melalui transfer ke:",
+    });
+    blocks.push({
+      type: "keyvalue",
+      rows: [
+        ["Nama Bank", orDash(namaBank)],
+        ["Nomor Rekening", orDash(nomorRekening)],
+        ["Atas Nama", orDash(atasNamaRekening)],
+      ],
+    });
   }
 
   // Pasal 5
-  blocks.push({ type: "pasal", nomor: 5, judul: "Pengiriman dan Penyerahan Barang" });
-  blocks.push({ type: "para", text: "Pengiriman dan penyerahan barang oleh Penjual kepada Pembeli dilakukan dalam dua tahap, yaitu:" });
+  blocks.push({
+    type: "pasal",
+    nomor: 5,
+    judul: "Pengiriman dan Penyerahan Barang",
+  });
+  blocks.push({
+    type: "para",
+    text: "Pengiriman dan penyerahan barang oleh Penjual kepada Pembeli dilakukan dalam dua tahap, yaitu:",
+  });
   blocks.push({
     type: "numbered",
     items: [
@@ -188,26 +222,42 @@ export function buildContractModel(state) {
   });
 
   // Pasal 6
-  blocks.push({ type: "pasal", nomor: 6, judul: "Hak dan Kewajiban Para Pihak" });
+  blocks.push({
+    type: "pasal",
+    nomor: 6,
+    judul: "Hak dan Kewajiban Para Pihak",
+  });
   blocks.push({
     type: "sublist",
     groups: [
-      { label: "Hak Penjual", items: [
-        "Menerima pembayaran sesuai harga yang telah disepakati.",
-        "Menerima pembayaran pada waktu dan tempat yang telah diperjanjikan.",
-      ]},
-      { label: "Kewajiban Penjual", items: [
-        "Melakukan pengiriman dan penyerahan barang sesuai perjanjian.",
-        "Menyerahkan barang pada waktu dan tempat yang telah diperjanjikan.",
-      ]},
-      { label: "Hak Pembeli", items: [
-        "Menerima barang sesuai perjanjian.",
-        "Menerima barang pada waktu dan tempat yang telah diperjanjikan.",
-      ]},
-      { label: "Kewajiban Pembeli", items: [
-        "Melakukan pembayaran sesuai harga yang telah disepakati.",
-        "Melakukan pembayaran pada waktu dan tempat yang telah diperjanjikan.",
-      ]},
+      {
+        label: "Hak Penjual",
+        items: [
+          "Menerima pembayaran sesuai harga yang telah disepakati.",
+          "Menerima pembayaran pada waktu dan tempat yang telah diperjanjikan.",
+        ],
+      },
+      {
+        label: "Kewajiban Penjual",
+        items: [
+          "Melakukan pengiriman dan penyerahan barang sesuai perjanjian.",
+          "Menyerahkan barang pada waktu dan tempat yang telah diperjanjikan.",
+        ],
+      },
+      {
+        label: "Hak Pembeli",
+        items: [
+          "Menerima barang sesuai perjanjian.",
+          "Menerima barang pada waktu dan tempat yang telah diperjanjikan.",
+        ],
+      },
+      {
+        label: "Kewajiban Pembeli",
+        items: [
+          "Melakukan pembayaran sesuai harga yang telah disepakati.",
+          "Melakukan pembayaran pada waktu dan tempat yang telah diperjanjikan.",
+        ],
+      },
     ],
   });
 

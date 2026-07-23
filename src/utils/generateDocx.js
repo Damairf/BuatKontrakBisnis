@@ -10,7 +10,8 @@ import { saveAs } from "file-saver";
 import { buildContractModel } from "./documentModel.js";
 
 const FONT = "Times New Roman";
-const SIZE = 24; // half-points -> 12pt
+const SIZE = 24;
+const LINE_SPACING = 276;
 
 function run(text, opts = {}) {
   return new TextRun({ text, font: FONT, size: SIZE, ...opts });
@@ -19,7 +20,7 @@ function run(text, opts = {}) {
 function para(text, opts = {}) {
   return new Paragraph({
     alignment: AlignmentType.JUSTIFIED,
-    spacing: { after: 160 },
+    spacing: { after: 160, line: LINE_SPACING, lineRule: "auto" },
     children: [run(text)],
     ...opts,
   });
@@ -28,7 +29,7 @@ function para(text, opts = {}) {
 function keyValueParagraph(label, value) {
   return new Paragraph({
     tabStops: [{ type: "left", position: 2400 }],
-    spacing: { after: 40 },
+    spacing: { after: 40, line: LINE_SPACING, lineRule: "auto" },
     children: [run(`${label}\t: ${value}`)],
   });
 }
@@ -38,20 +39,44 @@ const numbering = {
     {
       reference: "numbered-list",
       levels: [
-        { level: 0, format: LevelFormat.DECIMAL, text: "%1.", alignment: AlignmentType.START, style: { paragraph: { indent: { left: 720, hanging: 360 } } } },
+        {
+          level: 0,
+          format: LevelFormat.DECIMAL,
+          text: "%1.",
+          alignment: AlignmentType.START,
+          style: { paragraph: { indent: { left: 720, hanging: 360 } } },
+        },
       ],
     },
     {
       reference: "lettered-list",
       levels: [
-        { level: 0, format: LevelFormat.LOWER_LETTER, text: "%1.", alignment: AlignmentType.START, style: { paragraph: { indent: { left: 720, hanging: 360 } } } },
+        {
+          level: 0,
+          format: LevelFormat.LOWER_LETTER,
+          text: "%1.",
+          alignment: AlignmentType.START,
+          style: { paragraph: { indent: { left: 720, hanging: 360 } } },
+        },
       ],
     },
     {
       reference: "sublist-outer",
       levels: [
-        { level: 0, format: LevelFormat.DECIMAL, text: "%1.", alignment: AlignmentType.START, style: { paragraph: { indent: { left: 720, hanging: 360 } } } },
-        { level: 1, format: LevelFormat.LOWER_LETTER, text: "%2.", alignment: AlignmentType.START, style: { paragraph: { indent: { left: 1440, hanging: 360 } } } },
+        {
+          level: 0,
+          format: LevelFormat.DECIMAL,
+          text: "%1.",
+          alignment: AlignmentType.START,
+          style: { paragraph: { indent: { left: 720, hanging: 360 } } },
+        },
+        {
+          level: 1,
+          format: LevelFormat.LOWER_LETTER,
+          text: "%2.",
+          alignment: AlignmentType.START,
+          style: { paragraph: { indent: { left: 1440, hanging: 360 } } },
+        },
       ],
     },
   ],
@@ -61,7 +86,7 @@ function numberedItem(text, reference, level = 0, instance) {
   return new Paragraph({
     alignment: AlignmentType.JUSTIFIED,
     numbering: { reference, level, instance },
-    spacing: { after: 120 },
+    spacing: { after: 120, line: LINE_SPACING, lineRule: "auto" },
     children: [run(text)],
   });
 }
@@ -78,9 +103,9 @@ function blocksToParagraphs(blocks) {
         out.push(
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: { after: 240 },
+            spacing: { after: 240, line: LINE_SPACING, lineRule: "auto" },
             children: [run(block.text, { bold: true, size: 28 })],
-          })
+          }),
         );
         break;
 
@@ -100,26 +125,35 @@ function blocksToParagraphs(blocks) {
         out.push(
           new Paragraph({
             alignment: AlignmentType.JUSTIFIED,
-            spacing: { after: 200, before: 80 },
+            spacing: {
+              after: 200,
+              before: 80,
+              line: LINE_SPACING,
+              lineRule: "auto",
+            },
             children: [
               run(
-                `Dalam hal ini bertindak sebagai ${block.pihak.pekerjaan || "…."} dari ${block.pihak.perusahaan || "…."}, beralamat di ${block.pihak.alamat || "…."} (selanjutnya disebut sebagai `
+                `Dalam hal ini bertindak sebagai ${block.pihak.pekerjaan || "…."} dari ${block.pihak.perusahaan || "…."}, beralamat di ${block.pihak.alamat || "…."} (selanjutnya disebut sebagai `,
               ),
               run(`“${block.label}”`, { bold: true }),
               run(");"),
             ],
-          })
+          }),
         );
         break;
       }
 
       case "numbered":
-        block.items.forEach((it) => out.push(numberedItem(it, "numbered-list", 0, numberedInstance)));
+        block.items.forEach((it) =>
+          out.push(numberedItem(it, "numbered-list", 0, numberedInstance)),
+        );
         numberedInstance += 1;
         break;
 
       case "lettered":
-        block.items.forEach((it) => out.push(numberedItem(it, "lettered-list", 0, letteredInstance)));
+        block.items.forEach((it) =>
+          out.push(numberedItem(it, "lettered-list", 0, letteredInstance)),
+        );
         letteredInstance += 1;
         break;
 
@@ -127,16 +161,21 @@ function blocksToParagraphs(blocks) {
         out.push(
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: { before: 240, after: 0 },
+            spacing: {
+              before: 240,
+              after: 0,
+              line: LINE_SPACING,
+              lineRule: "auto",
+            },
             children: [run(`Pasal ${block.nomor}`, { bold: true })],
-          })
+          }),
         );
         out.push(
           new Paragraph({
             alignment: AlignmentType.CENTER,
-            spacing: { after: 160 },
+            spacing: { after: 160, line: LINE_SPACING, lineRule: "auto" },
             children: [run(block.judul, { bold: true })],
-          })
+          }),
         );
         break;
 
@@ -148,19 +187,27 @@ function blocksToParagraphs(blocks) {
         block.groups.forEach((g) => {
           out.push(
             new Paragraph({
-              numbering: { reference: "sublist-outer", level: 0, instance: sublistInstance },
-              spacing: { after: 60 },
+              numbering: {
+                reference: "sublist-outer",
+                level: 0,
+                instance: sublistInstance,
+              },
+              spacing: { after: 60, line: LINE_SPACING, lineRule: "auto" },
               children: [run(g.label, { bold: true })],
-            })
+            }),
           );
           g.items.forEach((it) => {
             out.push(
               new Paragraph({
                 alignment: AlignmentType.JUSTIFIED,
-                numbering: { reference: "sublist-outer", level: 1, instance: sublistInstance },
-                spacing: { after: 80 },
+                numbering: {
+                  reference: "sublist-outer",
+                  level: 1,
+                  instance: sublistInstance,
+                },
+                spacing: { after: 80, line: LINE_SPACING, lineRule: "auto" },
                 children: [run(it)],
-              })
+              }),
             );
           });
         });
@@ -170,17 +217,32 @@ function blocksToParagraphs(blocks) {
       case "signature": {
         out.push(
           new Paragraph({
-            spacing: { before: 400 },
-            tabStops: [{ type: "center", position: 2300 }, { type: "center", position: 7000 }],
+            spacing: { before: 400, line: LINE_SPACING, lineRule: "auto" },
+            tabStops: [
+              { type: "center", position: 2300 },
+              { type: "center", position: 7000 },
+            ],
             children: [run(`\t${block.kiri.label}\t${block.kanan.label}`)],
-          })
+          }),
         );
-        for (let i = 0; i < 3; i += 1) out.push(new Paragraph({ children: [run("")] }));
+        for (let i = 0; i < 3; i += 1)
+          out.push(
+            new Paragraph({
+              spacing: { line: LINE_SPACING, lineRule: "auto" },
+              children: [run("")],
+            }),
+          );
         out.push(
           new Paragraph({
-            tabStops: [{ type: "center", position: 2300 }, { type: "center", position: 7000 }],
-            children: [run(`\t${block.kiri.nama}\t${block.kanan.nama}`, { bold: true })],
-          })
+            spacing: { line: LINE_SPACING, lineRule: "auto" },
+            tabStops: [
+              { type: "center", position: 2300 },
+              { type: "center", position: 7000 },
+            ],
+            children: [
+              run(`\t${block.kiri.nama}\t${block.kanan.nama}`, { bold: true }),
+            ],
+          }),
         );
         break;
       }
@@ -201,7 +263,10 @@ export async function generateDocxBlob(state) {
     numbering,
     styles: {
       default: {
-        document: { run: { font: FONT, size: SIZE } },
+        document: {
+          run: { font: FONT, size: SIZE },
+          paragraph: { spacing: { line: LINE_SPACING, lineRule: "auto" } },
+        },
       },
     },
     sections: [

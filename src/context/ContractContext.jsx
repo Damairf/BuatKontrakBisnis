@@ -17,39 +17,31 @@ const emptyBarang = () => ({
 });
 
 export const initialState = {
-  // dashboard
   judul: "",
 
-  // page saat ini: "dashboard" | 1 | 2 | 3 | 4 | 5
   page: "dashboard",
 
-  // tahap 1
   pihak1: emptyPihak(),
   pihak2: emptyPihak(),
-  tanggalPembuatan: "", // format YYYY-MM-DD
+  tanggalPembuatan: "",
 
-  // tahap 2
   barangKeseluruhan: [emptyBarang()],
   hargaPerSatuan: [emptyBarang()],
   barangPengirimanTahap1: [emptyBarang()],
   barangPengirimanTahap2: [emptyBarang()],
 
-  // tahap 3
   ketentuanUmum: [""],
 
-  // tahap 4
-  metodePembayaran: "transfer", // "transfer" | "tunai"
+  metodePembayaran: "transfer",
   namaBank: "",
   nomorRekening: "",
   atasNamaRekening: "",
 
-  // tahap 5
   alamatPengantaran: "",
   alamatPeresmian: "",
   saksi1: "",
   saksi2: "",
 
-  // pengaturan opsional untuk fitur "Perbaiki Penulisan"
   geminiApiKey: "",
 };
 

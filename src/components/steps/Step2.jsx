@@ -226,7 +226,6 @@ export default function Step2() {
         addLabel="Tambah Harga Barang"
       />
 
-      {/* Pemisah visual */}
       <div className="border-t border-gray-200 my-4" />
       <p className="text-gray-400 text-sm mb-5">Pengiriman Barang (Pasal 5)</p>
 

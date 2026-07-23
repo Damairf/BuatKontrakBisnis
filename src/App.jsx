@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, forwardRef } from "react";
 import { ContractProvider, useContract } from "./context/ContractContext.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import StepIndicator from "./components/StepIndicator.jsx";
@@ -12,9 +12,12 @@ import Step5 from "./components/steps/Step5.jsx";
 
 import logoKkn from "./assets/Logo_KKN_Kelurahan_Kaliancar.png";
 
-function Header() {
+const Header = forwardRef(function Header(_, ref) {
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-xs">
+    <header
+      ref={ref}
+      className="bg-white border-b border-gray-200 sticky top-0 z-40 shadow-xs"
+    >
       <div className="max-w-[1600px] mx-auto px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-4 select-none">
           <img
@@ -35,23 +38,18 @@ function Header() {
       </div>
     </header>
   );
-}
+});
 
-function Wizard() {
+function Wizard({ headerHeight }) {
   const { state, goTo, reset } = useContract();
   const [showDelete, setShowDelete] = useState(false);
-
-  const rightScrollContainerRef = useRef(null);
   const desktopLeftPanelRef = useRef(null);
 
   useEffect(() => {
-    // Reset scroll ke atas saat langkah/halaman berubah
-    if (rightScrollContainerRef.current) {
-      rightScrollContainerRef.current.scrollTop = 0;
-    }
     if (desktopLeftPanelRef.current) {
       desktopLeftPanelRef.current.scrollTop = 0;
     }
+    window.scrollTo({ top: 0, behavior: "auto" });
   }, [state.page]);
 
   const StepComponent = {
@@ -63,51 +61,46 @@ function Wizard() {
   }[state.page];
 
   return (
-    <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-4">
-      {/* On desktop (lg:grid): standard grid layout. On mobile (flex): sidebar left, content right */}
-      <div className="flex lg:grid lg:grid-cols-12 gap-4 lg:gap-6 h-[calc(100vh-76px)] lg:h-auto overflow-hidden lg:overflow-visible">
-        {/* Left Sidebar (Mobile only) */}
-        <div className="flex-none self-start sticky top-0 z-20 lg:hidden">
-          <StepIndicator
-            current={state.page}
-            state={state}
-            onSelect={(n) => goTo(n)}
-            onHapus={() => setShowDelete(true)}
-          />
-        </div>
+    <>
+      {/* Step bar mobile: full-bleed, mentok kiri-kanan, nempel persis di bawah header */}
+      <div
+        className="lg:hidden sticky z-20 w-full"
+        style={{ top: headerHeight }}
+      >
+        <StepIndicator
+          current={state.page}
+          state={state}
+          onSelect={(n) => goTo(n)}
+          onHapus={() => setShowDelete(true)}
+        />
+      </div>
 
-        {/* Desktop Left Panel (lg only) - keeps original structure */}
-        <div
-          ref={desktopLeftPanelRef}
-          className="hidden lg:flex lg:col-span-5 flex-col gap-4 max-h-[calc(100vh-100px)] overflow-y-auto pr-1"
-        >
-          <StepIndicator
-            current={state.page}
-            state={state}
-            onSelect={(n) => goTo(n)}
-            onHapus={() => setShowDelete(true)}
-          />
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            {StepComponent && <StepComponent />}
-          </div>
-        </div>
-
-        {/* Mobile Right Content Area / Desktop Right Panel */}
-        {/* On Mobile: scrolls, form on top, document below */}
-        {/* On Desktop: document sticky on the right */}
-        <div
-          ref={rightScrollContainerRef}
-          className="flex-1 lg:flex-none lg:col-span-7 overflow-y-auto overflow-x-hidden lg:overflow-visible h-full lg:h-auto space-y-6 lg:space-y-0 pb-10 lg:pb-0 doc-scroll"
-        >
-          {/* On Mobile: Show Form here (on top) */}
-          <div className="block lg:hidden bg-white rounded-xl shadow-sm p-5 border border-gray-200">
-            {StepComponent && <StepComponent />}
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 pb-4 pt-4 lg:pt-4">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-6">
+          {/* Desktop Left Panel */}
+          <div
+            ref={desktopLeftPanelRef}
+            className="hidden lg:flex lg:col-span-5 flex-col gap-4 max-h-[calc(100vh-100px)] overflow-y-auto pr-1"
+          >
+            <StepIndicator
+              current={state.page}
+              state={state}
+              onSelect={(n) => goTo(n)}
+              onHapus={() => setShowDelete(true)}
+            />
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              {StepComponent && <StepComponent />}
+            </div>
           </div>
 
-          {/* Document Preview */}
-          {/* On Desktop, make it sticky top-4 with fixed height */}
-          <div className="lg:sticky lg:top-4 lg:h-[calc(100vh-100px)]">
-            <DocumentPreview state={state} />
+          <div className="lg:col-span-7 space-y-6 lg:space-y-0">
+            <div className="block lg:hidden bg-white rounded-xl shadow-sm p-5 border border-gray-200 mt-4">
+              {StepComponent && <StepComponent />}
+            </div>
+
+            <div className="lg:sticky lg:top-4 lg:h-[calc(100vh-100px)]">
+              <DocumentPreview state={state} />
+            </div>
           </div>
         </div>
       </div>
@@ -121,16 +114,32 @@ function Wizard() {
           }}
         />
       )}
-    </div>
+    </>
   );
 }
 
 function Shell() {
   const { state } = useContract();
+  const headerRef = useRef(null);
+  const [headerHeight, setHeaderHeight] = useState(72);
+
+  useEffect(() => {
+    function measure() {
+      if (headerRef.current) setHeaderHeight(headerRef.current.offsetHeight);
+    }
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
   return (
     <div className="min-h-screen">
-      <Header />
-      {state.page === "dashboard" ? <Dashboard /> : <Wizard />}
+      <Header ref={headerRef} />
+      {state.page === "dashboard" ? (
+        <Dashboard />
+      ) : (
+        <Wizard headerHeight={headerHeight} />
+      )}
     </div>
   );
 }

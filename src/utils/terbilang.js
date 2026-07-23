@@ -1,13 +1,17 @@
-// Konversi angka ke teks bahasa Indonesia (terbilang)
-// Mendukung bilangan bulat non-negatif sampai triliunan, serta bilangan negatif & desimal sederhana.
-
 const SATUAN = [
-  "", "satu", "dua", "tiga", "empat", "lima",
-  "enam", "tujuh", "delapan", "sembilan",
+  "",
+  "satu",
+  "dua",
+  "tiga",
+  "empat",
+  "lima",
+  "enam",
+  "tujuh",
+  "delapan",
+  "sembilan",
 ];
 
 function bacaTiga(n) {
-  // n: 0 - 999
   let hasil = "";
   const ratusan = Math.floor(n / 100);
   const sisaRatusan = n % 100;
@@ -19,7 +23,8 @@ function bacaTiga(n) {
   }
 
   if (sisaRatusan >= 11 && sisaRatusan <= 19) {
-    hasil += sisaRatusan === 11 ? "sebelas " : `${SATUAN[sisaRatusan - 10]} belas `;
+    hasil +=
+      sisaRatusan === 11 ? "sebelas " : `${SATUAN[sisaRatusan - 10]} belas `;
   } else if (sisaRatusan === 10) {
     hasil += "sepuluh ";
   } else {
@@ -37,7 +42,10 @@ function bacaTiga(n) {
  */
 export function terbilang(angka) {
   if (angka === "" || angka === null || angka === undefined) return "";
-  let num = typeof angka === "string" ? Number(angka.toString().replace(/[^0-9.-]/g, "")) : angka;
+  let num =
+    typeof angka === "string"
+      ? Number(angka.toString().replace(/[^0-9.-]/g, ""))
+      : angka;
   if (Number.isNaN(num)) return "";
 
   if (num === 0) return "nol";
@@ -45,7 +53,6 @@ export function terbilang(angka) {
   const negatif = num < 0;
   num = Math.abs(num);
 
-  // pisahkan bagian desimal (jarang dipakai untuk kontrak, tapi didukung)
   const bagianBulat = Math.floor(num);
   const bagianDesimal = Math.round((num - bagianBulat) * 100);
 
@@ -89,7 +96,10 @@ export function terbilang(angka) {
  */
 export function formatAngka(angka) {
   if (angka === "" || angka === null || angka === undefined) return "";
-  const num = typeof angka === "string" ? Number(angka.toString().replace(/[^0-9.-]/g, "")) : angka;
+  const num =
+    typeof angka === "string"
+      ? Number(angka.toString().replace(/[^0-9.-]/g, ""))
+      : angka;
   if (Number.isNaN(num)) return "";
   return num.toLocaleString("id-ID");
 }
@@ -98,7 +108,8 @@ export function formatAngka(angka) {
  * Gabungan: kembalikan "1.500.000 (satu juta lima ratus ribu)"
  */
 export function angkaDanTerbilang(angka, satuan = "") {
-  if (angka === "" || angka === null || angka === undefined || angka === 0) return "....";
+  if (angka === "" || angka === null || angka === undefined || angka === 0)
+    return "....";
   const teksAngka = formatAngka(angka);
   const teksHuruf = terbilang(angka);
   return `${teksAngka}${satuan ? " " + satuan : ""} (${teksHuruf}${satuan ? " " + satuan : ""})`;
