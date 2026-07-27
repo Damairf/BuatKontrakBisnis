@@ -217,7 +217,7 @@ function blocksToParagraphs(blocks) {
       case "signature": {
         out.push(
           new Paragraph({
-            spacing: { before: 400, line: LINE_SPACING, lineRule: "auto" },
+            spacing: { before: 400 },
             tabStops: [
               { type: "center", position: 2300 },
               { type: "center", position: 7000 },
@@ -226,15 +226,9 @@ function blocksToParagraphs(blocks) {
           }),
         );
         for (let i = 0; i < 3; i += 1)
-          out.push(
-            new Paragraph({
-              spacing: { line: LINE_SPACING, lineRule: "auto" },
-              children: [run("")],
-            }),
-          );
+          out.push(new Paragraph({ children: [run("")] }));
         out.push(
           new Paragraph({
-            spacing: { line: LINE_SPACING, lineRule: "auto" },
             tabStops: [
               { type: "center", position: 2300 },
               { type: "center", position: 7000 },
@@ -273,7 +267,7 @@ export async function generateDocxBlob(state) {
       {
         properties: {
           page: {
-            size: { width: 11906, height: 16838 }, // A4 in DXA
+            size: { width: 11906, height: 16838 },
             margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 },
           },
         },
