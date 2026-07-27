@@ -3,6 +3,7 @@ import {
   Packer,
   Paragraph,
   TextRun,
+  Tab,
   AlignmentType,
   LevelFormat,
 } from "docx";
@@ -15,6 +16,12 @@ const LINE_SPACING = 276;
 
 function run(text, opts = {}) {
   return new TextRun({ text, font: FONT, size: SIZE, ...opts });
+}
+
+// tab sebagai elemen terpisah, bukan karakter "\t" di dalam teks —
+// supaya konsisten dirender oleh Word maupun viewer sederhana lain
+function tab() {
+  return new TextRun({ children: [new Tab()], font: FONT, size: SIZE });
 }
 
 function para(text, opts = {}) {
@@ -30,7 +37,7 @@ function keyValueParagraph(label, value) {
   return new Paragraph({
     tabStops: [{ type: "left", position: 2400 }],
     spacing: { after: 40, line: LINE_SPACING, lineRule: "auto" },
-    children: [run(`${label}\t: ${value}`)],
+    children: [run(label), tab(), run(`: ${value}`)],
   });
 }
 
@@ -217,24 +224,33 @@ function blocksToParagraphs(blocks) {
       case "signature": {
         out.push(
           new Paragraph({
-            spacing: { before: 400 },
+            spacing: { before: 400, line: LINE_SPACING, lineRule: "auto" },
             tabStops: [
               { type: "center", position: 2300 },
               { type: "center", position: 7000 },
             ],
-            children: [run(`\t${block.kiri.label}\t${block.kanan.label}`)],
+            children: [
+              tab(),
+              run(block.kiri.label),
+              tab(),
+              run(block.kanan.label),
+            ],
           }),
         );
         for (let i = 0; i < 3; i += 1)
           out.push(new Paragraph({ children: [run("")] }));
         out.push(
           new Paragraph({
+            spacing: { line: LINE_SPACING, lineRule: "auto" },
             tabStops: [
               { type: "center", position: 2300 },
               { type: "center", position: 7000 },
             ],
             children: [
-              run(`\t${block.kiri.nama}\t${block.kanan.nama}`, { bold: true }),
+              tab(),
+              run(block.kiri.nama, { bold: true }),
+              tab(),
+              run(block.kanan.nama, { bold: true }),
             ],
           }),
         );
